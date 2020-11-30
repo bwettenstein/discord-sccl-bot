@@ -1,0 +1,24 @@
+{
+  "name": "discord-sccl-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bwettenstein/discord-sccl-bot.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bwettenstein/discord-sccl-bot/issues"
+  },
+  "homepage": "https://github.com/bwettenstein/discord-sccl-bot#readme",
+  "dependencies": {
+    "nodemon": "^2.0.6",
+    "puppeteer": "^5.5.0"
+  }
+}
