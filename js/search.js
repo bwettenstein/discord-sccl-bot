@@ -3,11 +3,7 @@ const puppeteer = require('puppeteer');
 
 const getSearchResults = async (url) => {
   try {
-    const paginationTextClass = '.pagination-text';
     const titleAuthorContainerClass = '.cp-deprecated-bib-brief';
-    const titleFormatClass = '.cp-screen-reader-message';
-    const authorClass = '.author-link';
-    const subtitleClass = '.cp-subtitle';
 
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
@@ -25,21 +21,6 @@ const getSearchResults = async (url) => {
       waitUntil: ['load', 'domcontentloaded'],
     });
 
-    // Get the string that has the number of results
-    const paginationText = await page.$(paginationTextClass);
-    const numOfResults = await page.evaluate(
-      (element) => element.textContent,
-      paginationText
-    );
-
-    // The format for the pagination text is 'NUMBER to NUMBER of TOTAL_RESULTS results
-    // To get the total results, we split the string by spaces
-    // From there, we get the index of the word 'results' in the array
-    // The index right before that one holds the total results
-    const paginationTextArray = numOfResults.split(' ');
-    const indexOfResults = paginationTextArray.indexOf('results');
-    const totalResults = paginationTextArray[indexOfResults - 1];
-
     // Get the columns that have the title and the author
     const titleAndAuthorContainer = await page.$$(titleAuthorContainerClass);
 
@@ -49,26 +30,24 @@ const getSearchResults = async (url) => {
       // Grab the title and format
       const titleAndAuthorElement = titleAndAuthorContainer[x];
       const { title, format } = await getTitleAndFormat(
-        titleFormatClass,
         titleAndAuthorElement,
         page
       );
+
+      const url = await getResultUrl(titleAndAuthorElement, page);
 
       // Parse the results for the author, if applicable
-      const author = await getAuthor(authorClass, titleAndAuthorElement, page);
+      const author = await getAuthor(titleAndAuthorElement, page);
 
       // Check if the search result has a "subtitle element", if applicable
-      const subtitle = await getSubtitle(
-        subtitleClass,
-        titleAndAuthorElement,
-        page
-      );
+      const subtitle = await getSubtitle(titleAndAuthorElement, page);
 
       const searchResult = {
         title,
         format,
         author,
         subtitle,
+        url,
       };
       searchResultsArray.push(searchResult);
     }
@@ -81,15 +60,71 @@ const getSearchResults = async (url) => {
   }
 };
 
+// Get the pagination of the current results on the current page
+// * The format for the pagination text is 'NUMBER (paginationStart) to NUMBER (paginationEnd) of TOTAL_RESULTS results'
+// Takes in a searchQuery, which can be "paginationStart" (which returns the starting index of the current results, see *),
+// paginationEnd (which returns the end index of the current results, see *),
+// totalResults (which returns the total number of results, see *),
+// or returns the paginationStart, paginationEnd, and totalResults as an object if searchQuery is empty
+const getPagination = async (searchQuery = '', page) => {
+  const paginationTextClass = '.pagination-text';
+
+  // Get the string that has the number of results
+  const paginationText = await page.$(paginationTextClass);
+  const numOfResults = await page.evaluate(
+    (element) => element.textContent,
+    paginationText
+  );
+
+  // The format for the pagination text is 'NUMBER (paginationStart) to NUMBER (paginationEnd) of TOTAL_RESULTS results
+  // To get the total results, we split the string by spaces
+  // From there, we get the index of the word 'results' in the array
+  // The index right before that one holds the total results
+  const paginationTextArray = numOfResults.split(' ');
+  const indexOfResults = paginationTextArray.indexOf('results');
+  const paginationStart = paginationTextArray[0];
+  const paginationEnd = paginationTextArray[2];
+  const totalResults = paginationTextArray[indexOfResults - 1];
+
+  let output;
+
+  switch (searchQuery) {
+    case 'paginationStart':
+      output = paginationStart;
+      break;
+    case 'paginationEnd':
+      output = paginationEnd;
+      break;
+    case 'totalResults':
+      output = totalResults;
+      break;
+    default:
+      output = { paginationStart, paginationEnd, totalResults };
+      break;
+  }
+  return output;
+};
+
+const getResultUrl = async (titleAndAuthorElement, page) => {
+  // The href link will be added to the end of this url
+
+  const anchorElement = await titleAndAuthorElement.$('a');
+
+  const href = await page.evaluate(
+    (anchorElement) => anchorElement.getAttribute('href'),
+    anchorElement
+  );
+
+  const url = 'https://sccl.bibliocommons.com' + href;
+
+  return url;
+};
+
 // Grabs the title and format for a given titleAndAuthorElement and returns them, if applicable
-// Takes in the titleFormatClass which is the className to search for
 // Takes in the titleAndAuthorElement to parse the title and format from
 // Takes in page in order to use the puppeteer query selector method
-const getTitleAndFormat = async (
-  titleFormatClass,
-  titleAndAuthorElement,
-  page
-) => {
+const getTitleAndFormat = async (titleAndAuthorElement, page) => {
+  const titleFormatClass = '.cp-screen-reader-message';
   const titleAndFormatElement = await titleAndAuthorElement.$(titleFormatClass);
 
   let titleAndFormatString = await page.evaluate(
@@ -110,11 +145,11 @@ const getTitleAndFormat = async (
 };
 
 // Get the author and return it, if applicable
-// Takes in authorClass, which is the name of the class that holds the name of the author
 // Takes titleAndAuthorElement, to get the author element from
 // Takes page, which allows us to use the puppeter query selector method
-const getAuthor = async (authorClass, titleAndAuthorElement, page) => {
+const getAuthor = async (titleAndAuthorElement, page) => {
   // Parse the results for the author, if applicable
+  const authorClass = '.author-link';
   const authorElement = await titleAndAuthorElement.$(authorClass);
   const author = await page.evaluate((authorElement) => {
     if (authorElement) return authorElement.innerText;
@@ -123,10 +158,10 @@ const getAuthor = async (authorClass, titleAndAuthorElement, page) => {
 };
 
 // Get subtitle element and returns it, if applicable
-// Takes in subtitleClass, which is the name of the class that holds the name of the subtitle
 // Takes titleAndAuthorElement, to get the author element from
 // Takes page, which allows us to use the puppeter query selector method
-const getSubtitle = async (subtitleClass, titleAndAuthorElement, page) => {
+const getSubtitle = async (titleAndAuthorElement, page) => {
+  const subtitleClass = '.cp-subtitle';
   const subtitleElement = await titleAndAuthorElement.$(subtitleClass);
 
   const subtitle = await page.evaluate((subtitleElement) => {
