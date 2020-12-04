@@ -46,36 +46,23 @@ const getSearchResults = async (url) => {
     // Grab the title and the format
     // Using a for loop so I can use the await keyword since it doesn't wotk in a forEach
     for (let x = 0; x < titleAndAuthorContainer.length; x++) {
-      const titleAndFormatElement = await titleAndAuthorContainer[x].$(
-        titleFormatClass
+      // Grab the title and format
+      const titleAndAuthorElement = titleAndAuthorContainer[x];
+      const { title, format } = await getTitleAndFormat(
+        titleFormatClass,
+        titleAndAuthorElement,
+        page
       );
-
-      // The title and the format are stored in a string that's formatted like:
-      // ITEM TITLE, FORMAT
-      // To get the title and item, we split the string by ", "
-      // The first item in the array will be the title, the 2nd will be the format
-
-      let titleAndFormatString = await page.evaluate(
-        (titleAndFormatElement) => titleAndFormatElement.innerText,
-        titleAndFormatElement
-      );
-      titleAndFormatString = titleAndFormatString.split(', ');
-
-      const title = titleAndFormatString[0];
-      const format = titleAndFormatString[1];
 
       // Parse the results for the author, if applicable
-      const authorElement = await titleAndAuthorContainer[x].$(authorClass);
-      const author = await page.evaluate((authorElement) => {
-        if (authorElement) return authorElement.innerText;
-      }, authorElement);
+      const author = await getAuthor(authorClass, titleAndAuthorElement, page);
 
       // Check if the search result has a "subtitle element", if applicable
-      const subtitleElement = await titleAndAuthorContainer[x].$(subtitleClass);
-
-      const subtitle = await page.evaluate((subtitleElement) => {
-        if (subtitleElement) return subtitleElement.innerText;
-      }, subtitleElement);
+      const subtitle = await getSubtitle(
+        subtitleClass,
+        titleAndAuthorElement,
+        page
+      );
 
       const searchResult = {
         title,
@@ -92,6 +79,61 @@ const getSearchResults = async (url) => {
   } catch (err) {
     console.error(err.message, 'ERRRRRRR');
   }
+};
+
+// Grabs the title and format for a given titleAndAuthorElement and returns them, if applicable
+// Takes in the titleFormatClass which is the className to search for
+// Takes in the titleAndAuthorElement to parse the title and format from
+// Takes in page in order to use the puppeteer query selector method
+const getTitleAndFormat = async (
+  titleFormatClass,
+  titleAndAuthorElement,
+  page
+) => {
+  const titleAndFormatElement = await titleAndAuthorElement.$(titleFormatClass);
+
+  let titleAndFormatString = await page.evaluate(
+    (titleAndFormatElement) => titleAndFormatElement.innerText,
+    titleAndFormatElement
+  );
+
+  // The title and the format are stored in a string that's formatted like:
+  // ITEM TITLE, FORMAT
+  // To get the title and item, we split the string by ", "
+  // The first item in the array will be the title, the 2nd will be the format
+
+  titleAndFormatString = titleAndFormatString.split(', ');
+
+  const title = titleAndFormatString[0];
+  const format = titleAndFormatString[1];
+  return { title, format };
+};
+
+// Get the author and return it, if applicable
+// Takes in authorClass, which is the name of the class that holds the name of the author
+// Takes titleAndAuthorElement, to get the author element from
+// Takes page, which allows us to use the puppeter query selector method
+const getAuthor = async (authorClass, titleAndAuthorElement, page) => {
+  // Parse the results for the author, if applicable
+  const authorElement = await titleAndAuthorElement.$(authorClass);
+  const author = await page.evaluate((authorElement) => {
+    if (authorElement) return authorElement.innerText;
+  }, authorElement);
+  return author;
+};
+
+// Get subtitle element and returns it, if applicable
+// Takes in subtitleClass, which is the name of the class that holds the name of the subtitle
+// Takes titleAndAuthorElement, to get the author element from
+// Takes page, which allows us to use the puppeter query selector method
+const getSubtitle = async (subtitleClass, titleAndAuthorElement, page) => {
+  const subtitleElement = await titleAndAuthorElement.$(subtitleClass);
+
+  const subtitle = await page.evaluate((subtitleElement) => {
+    if (subtitleElement) return subtitleElement.innerText;
+  }, subtitleElement);
+
+  return subtitle;
 };
 
 // Prints out each search result
