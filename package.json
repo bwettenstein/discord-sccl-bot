@@ -18,6 +18,8 @@
   },
   "homepage": "https://github.com/bwettenstein/discord-sccl-bot#readme",
   "dependencies": {
+    "discord.js": "^12.5.1",
+    "dotenv": "^8.2.0",
     "nodemon": "^2.0.6",
     "puppeteer": "^5.5.0"
   }

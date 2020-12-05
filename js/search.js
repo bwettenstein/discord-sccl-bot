@@ -109,12 +109,10 @@ const getResultUrl = async (titleAndAuthorElement, page) => {
   // The href link will be added to the end of this url
 
   const anchorElement = await titleAndAuthorElement.$('a');
-
   const href = await page.evaluate(
     (anchorElement) => anchorElement.getAttribute('href'),
     anchorElement
   );
-
   const url = 'https://sccl.bibliocommons.com' + href;
 
   return url;
@@ -192,4 +190,12 @@ const printSearchResults = async (searchResultsArray) => {
   });
 };
 
-module.exports = { getSearchResults, printSearchResults };
+module.exports = {
+  getSearchResults,
+  printSearchResults,
+  getPagination,
+  getResultUrl,
+  getAuthor,
+  getSubtitle,
+  getTitleAndFormat,
+};
