@@ -170,6 +170,7 @@ const getSubtitle = async (titleAndAuthorElement, page) => {
 };
 
 // Prints out each search result
+// Mostly used for debugging
 const printSearchResults = async (searchResultsArray) => {
   searchResultsArray.forEach((result) => {
     if (result.subtitle && result.author) {
