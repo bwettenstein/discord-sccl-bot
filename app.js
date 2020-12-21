@@ -76,10 +76,27 @@ bot.on('message', async (message) => {
               const output = await req.printSearchResults();
               await message.channel.send(output);
             } else if (m.first().content.toLowerCase().startsWith('!next')) {
-              await message.channel.send('**Getting next page**');
-              await req.nextPage();
-              const output = await req.printSearchResults();
-              await message.channel.send(output);
+              if (req !== null && req.checkIfPaginationPossible('next')) {
+                await message.channel.send('**Getting next page**');
+                await req.nextPage();
+                const output = await req.printSearchResults();
+                await message.channel.send(output);
+              } else {
+                await message.channel.send(
+                  'Either **you lack a search request** or **there is no next page of search results**'
+                );
+              }
+            } else if (m.first().content.toLowerCase().startsWith('!prev')) {
+              if (req !== null && req.checkIfPaginationPossible('prev')) {
+                await message.channel.send('**Getting previous page**');
+                await req.prevPage();
+                const output = await req.printSearchResults();
+                await message.channel.send(output);
+              } else {
+                await message.channel.send(
+                  'Either **you lack a search request** or **there is no previous page of search results**'
+                );
+              }
             }
           })
           .catch((err) => {

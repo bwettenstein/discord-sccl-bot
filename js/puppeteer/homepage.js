@@ -26,12 +26,12 @@ const searchTitle = async (searchQuery) => {
     });
 
     // Screenshots are for debugging progress
-    await page.screenshot({ path: 'screenshot1.png' });
+    // await page.screenshot({ path: 'screenshot1.png' });
 
     // Reveals the search container
     await page.click(headerClass);
 
-    await page.screenshot({ path: 'screenshot2.png' });
+    // await page.screenshot({ path: 'screenshot2.png' });
 
     await page.waitForSelector(mobileFormId);
     const mobileForm = await page.$(mobileFormId);
@@ -40,7 +40,7 @@ const searchTitle = async (searchQuery) => {
     searchBar = await mobileForm.$(searchBarDataTag);
     await searchBar.type(searchQuery);
 
-    await page.screenshot({ path: 'screenshot3.png' });
+    // await page.screenshot({ path: 'screenshot3.png' });
 
     searchButtonWrapper = await mobileForm.$(searchButtonWrapperClass);
 
@@ -48,7 +48,7 @@ const searchTitle = async (searchQuery) => {
 
     // Wait until the next page has loaded before recording a screenshot for progress
     await page.waitForTimeout(5000);
-    await page.screenshot({ path: 'screenshot4.png' });
+    // await page.screenshot({ path: 'screenshot4.png' });
 
     await browser.close();
 

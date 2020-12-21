@@ -33,31 +33,55 @@ Request.prototype.search = async function (searchQuery) {
 // Get the library url and split it based off "pagination_page="
 // EX of a library url endpoint - "pagination_page=2" is always at the end of a lib url
 // It should return an array of size 2 (lets say it's called urlArray) where the first element is the url and the last element is the page number
-// Make the new libUrl urlArray[0] + "page=" + urlArray[1]+1
+// Make the new libUrl urlArray[0] + "page=" + urlArray[1] + 1
 // If the startPagination of the current page is the same as the startPagination of the previous page, that means that we've reached the maximum results
 // Otherwise, get the search results for the page and print to the user
 // NOTE the library url will only have the "pagination_page" endpoint when the user isn't on the first page of the search results
 // Therefore, we need check for that
 // ------------------------------------
 Request.prototype.nextPage = async function () {
+  if (this.checkIfPaginationPossible('next')) {
+    const splitUrl = this.libUrl.split('&pagination_page=');
+
+    // ------------------------------------
+    // Uncomment for debugging
+    // console.log(this.libUrl);
+    // console.log(splitUrl[0], '0', splitUrl[1], '1');
+    // ------------------------------------
+
+    let newUrl = null;
+
+    // If there's no "pagination_page" endpoint, we append it to the url
+    if (!splitUrl[1]) {
+      newUrl = splitUrl[0] + '&pagination_page=2';
+    } else {
+      // Parse the int from the string
+      const nextPageNumber = parseInt(splitUrl[1]) + 1;
+      newUrl = splitUrl[0] + `&pagination_page=${nextPageNumber}`;
+    }
+    this.setLibUrl(newUrl);
+    const searchResults = await search.getSearchResults(this.libUrl);
+    await this.setCurrentSearchResults(searchResults);
+    await this.setPaginationInfo();
+
+    return searchResults;
+  }
+};
+
+// ------------------------------------
+// Parses the existing libUrl and subtracts a 1 to the existing page number in the url
+// Get the library url and split it based off "pagination_page="
+// EX of a library url endpoint - "pagination_page=2" is always at the end of a lib url
+// It should return an array of size 2 (lets say it's called urlArray) where the first element is the url and the last element is the page number
+// Make the new libUrl urlArray[0] + "page=" + urlArray[1] - 1
+// ------------------------------------
+Request.prototype.prevPage = async function () {
   const splitUrl = this.libUrl.split('&pagination_page=');
 
-  // ------------------------------------
-  // Uncomment for debugging
-  // console.log(this.libUrl);
-  // console.log(splitUrl[0], '0', splitUrl[1], '1');
-  // ------------------------------------
+  // Parse the int from the string
+  const nextPageNumber = parseInt(splitUrl[1]) - 1;
+  const newUrl = splitUrl[0] + `&pagination_page=${nextPageNumber}`;
 
-  let newUrl = null;
-
-  // If there's no "pagination_page" endpoint, we append it to the url
-  if (!splitUrl[1]) {
-    newUrl = splitUrl[0] + '&pagination_page=2';
-  } else {
-    // Parse the int from the string
-    const nextPageNumber = parseInt(splitUrl[1]) + 1;
-    newUrl = splitUrl[0] + `&pagination_page=${nextPageNumber}`;
-  }
   this.setLibUrl(newUrl);
   const searchResults = await search.getSearchResults(this.libUrl);
   await this.setCurrentSearchResults(searchResults);
@@ -66,6 +90,9 @@ Request.prototype.nextPage = async function () {
   return searchResults;
 };
 
+// ------------------------------------
+// Method that outputs all the search results stored in the current Request's currentSearchResults array
+// ------------------------------------
 Request.prototype.printSearchResults = async function () {
   let output = '\n';
 
@@ -104,6 +131,26 @@ Request.prototype.printSearchResults = async function () {
 
 Request.prototype.checkIfRequestActive = function () {
   return this.activeRequest;
+};
+
+// ------------------------------------
+// Checks if it's possible to go to the next page or go to the previous page
+// Checks if going to the next page of the search results is possible by making sure that this.currentPagination.paginationEnd isn't equal to the value of this.currentPaginationInfo.totalResults
+// If both are equal, it means that we're on the last page of the search results
+// Checks if going to the previous page of the search results is possible by making sure that this.currentPagination.paginationEnd is greater than 10
+// If it is, that means we're not on the first page
+// checkCondition holds a string, either "next" or "prev" that tells the method what to check
+// url holds the libUrl
+// ------------------------------------
+Request.prototype.checkIfPaginationPossible = function (checkCondition) {
+  if (checkCondition === 'next') {
+    return (
+      this.currentPaginationInfo.paginationEnd !==
+      this.currentPaginationInfo.totalResults
+    );
+  } else {
+    return this.currentPaginationInfo.paginationEnd > 10;
+  }
 };
 
 // SET METHODS
