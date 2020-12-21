@@ -1,6 +1,5 @@
 const homepage = require('../puppeteer/homepage');
 const search = require('../puppeteer/search');
-
 class Request {
   // Name is the discord user
   // activeRequest is a boolean that determines if the request is active or not

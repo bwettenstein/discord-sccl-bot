@@ -1,6 +1,5 @@
 // Holds methods that pertain to the search results page of the library website
 const puppeteer = require('puppeteer');
-
 const getSearchResults = async (url) => {
   try {
     const titleAuthorContainerClass = '.cp-deprecated-bib-brief';

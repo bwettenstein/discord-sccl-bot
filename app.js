@@ -1,6 +1,5 @@
 // const puppeteer = require('puppeteer');
 const Request = require('./js/discord/Request');
-
 // ------------------------------------
 // Generic URL used to debug
 // ------------------------------------
