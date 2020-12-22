@@ -3,6 +3,7 @@ const puppeteer = require('puppeteer');
 const getSearchResults = async (url) => {
   try {
     const titleAuthorContainerClass = '.cp-deprecated-bib-brief';
+    const searchResultContainerClass = '.cp-search-result-item-content';
 
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
@@ -23,6 +24,9 @@ const getSearchResults = async (url) => {
     // Get the columns that have the title and the author
     const titleAndAuthorContainer = await page.$$(titleAuthorContainerClass);
 
+    // Get all the search result containers to parse the availability
+    const searchResultContainer = await page.$$(searchResultContainerClass);
+
     // Grab the title and the format
     // Using a for loop so I can use the await keyword since it doesn't wotk in a forEach
     for (let x = 0; x < titleAndAuthorContainer.length; x++) {
@@ -41,12 +45,27 @@ const getSearchResults = async (url) => {
       // Check if the search result has a "subtitle element", if applicable
       const subtitle = await getSubtitle(titleAndAuthorElement, page);
 
+      const searchResultElement = searchResultContainer[x];
+      const availabilityStatus = await getAvailability(
+        searchResultElement,
+        page
+      );
+
+      let availability = null;
+
+      if (availabilityStatus) {
+        availability = 'Available';
+      } else {
+        availability = 'Unavailable';
+      }
+
       const searchResult = {
         title,
         format,
         author,
         subtitle,
         url,
+        availability,
       };
       searchResultsArray.push(searchResult);
     }
@@ -173,6 +192,19 @@ const getSubtitle = async (titleAndAuthorElement, page) => {
   }, subtitleElement);
 
   return subtitle;
+};
+
+// Get searchResult element and grab the availabilityElement from it
+// If the availabilityElement's innerText is 'Available', return true
+const getAvailability = async (searchResultElement, page) => {
+  const availabilityClass = '.cp-availability-status';
+  const availabilityElement = await searchResultElement.$(availabilityClass);
+
+  let availability = await page.evaluate((availabilityElement) => {
+    if (availabilityElement) return availabilityElement.innerText;
+  }, availabilityElement);
+
+  return availability === 'Available';
 };
 
 // Prints out each search result

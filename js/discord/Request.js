@@ -107,23 +107,31 @@ Request.prototype.printSearchResults = async function () {
 
   searchResults.forEach((result) => {
     if (result.subtitle && result.author) {
-      output += `${searchResults.indexOf(result) + 1}. **${result.title}** **(${
+      output += `${searchResults.indexOf(result) + 1}. **${result.title} (${
         result.subtitle
-      })** | AUTHOR: **${result.author}** | FORMAT: **${result.format}** \n`;
+      })** | AUTHOR: **${result.author}** | FORMAT: **${
+        result.format
+      }** | AVAILABILITY: ** ${result.availability}** \n`;
     } else if (result.subtitle) {
       output += `${searchResults.indexOf(result) + 1}. **${result.title}** **(${
         result.subtitle
-      })** | FORMAT: **${result.format}** \n`;
+      })** | FORMAT: **${result.format}**  | AVAILABILITY: ** ${
+        result.availability
+      }**\n`;
     } else if (result.author) {
       output += `${searchResults.indexOf(result) + 1}.  **${
         result.title
-      }** | AUTHOR: **${result.author}** | FORMAT: **${result.format}** \n`;
+      }** | AUTHOR: **${result.author}** | FORMAT: **${
+        result.format
+      }** | AVAILABILITY: ** ${result.availability}** \n`;
       // For DVDs, Blu Rays, etc
       // They don't have subtitles or authors
     } else {
       output += `${searchResults.indexOf(result) + 1}.  **${
         result.title
-      }** | FORMAT: ${result.format} \n`;
+      }** | FORMAT: ${result.format} | AVAILABILITY: ** ${
+        result.availability
+      }** \n`;
     }
   });
   return output;
