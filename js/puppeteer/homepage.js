@@ -1,4 +1,5 @@
 // Holds methods that pertain to the homepage of the library website
+
 const puppeteer = require('puppeteer');
 
 const searchTitle = async (searchQuery) => {

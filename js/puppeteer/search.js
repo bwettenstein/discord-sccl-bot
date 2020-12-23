@@ -1,4 +1,5 @@
 // Holds methods that pertain to the search results page of the library website
+
 const puppeteer = require('puppeteer');
 const getSearchResults = async (url) => {
   try {
@@ -13,7 +14,8 @@ const getSearchResults = async (url) => {
     //   title,
     //   author (if applicable),
     //   format,
-    //   url
+    //   url,
+    // availability
     // }
     const searchResultsArray = [];
 

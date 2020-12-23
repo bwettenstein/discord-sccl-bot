@@ -44,7 +44,9 @@ bot.on('message', async (message) => {
     if (requests.includes(message.author.id)) return;
 
     try {
-      await message.channel.send('Bot has started');
+      await message.channel.send(
+        'Bot has started \n Available Commands: **!help**, **!search**, **!stop**'
+      );
 
       requests.push(message.author.id);
 
@@ -63,8 +65,9 @@ bot.on('message', async (message) => {
             // time: 30000,
             errors: ['time'],
           })
+          // This entire section needs to be condensed and written much neater. I'm thinking switch statements
           .then(async (m) => {
-            if (m.first().content.toLowerCase() === '!stop') {
+            if (m.first().content.toLowerCase().startsWith('!stop')) {
               await message.channel.send('**Application cancelled.**');
               requests.splice(requests.indexOf(message.author.id), 1);
               cancel = true;
@@ -75,12 +78,18 @@ bot.on('message', async (message) => {
               await req.search(searchTerm);
               const output = await req.printSearchResults();
               await message.channel.send(output);
+              await message.channel.send(
+                'Available Commands: **!help**, **!search**, **!stop**, **!next**, **!prev**'
+              );
             } else if (m.first().content.toLowerCase().startsWith('!next')) {
               if (req !== null && req.checkIfPaginationPossible('next')) {
                 await message.channel.send('**Getting next page**');
                 await req.nextPage();
                 const output = await req.printSearchResults();
                 await message.channel.send(output);
+                await message.channel.send(
+                  'Available Commands: **!help**, **!search**, **!stop**, **!next**, **!prev** **!get**'
+                );
               } else {
                 await message.channel.send(
                   'Either **you lack a search request** or **there is no next page of search results**'
@@ -92,11 +101,54 @@ bot.on('message', async (message) => {
                 await req.prevPage();
                 const output = await req.printSearchResults();
                 await message.channel.send(output);
+                await message.channel.send(
+                  'Available Commands: **!help**, **!search**, **!stop**, **!next**, **!prev** **!get **'
+                );
               } else {
                 await message.channel.send(
                   'Either **you lack a search request** or **there is no previous page of search results**'
                 );
               }
+            } else if (m.first().content.toLowerCase().startsWith('!get')) {
+              if (req !== null) {
+                const arg = m.first().content.split(' ');
+                const numArg = parseInt(arg[1]);
+                // Checks if the number is greater than 0 and less than the current size of the currentSearchResults
+                if (
+                  numArg > 0 &&
+                  numArg < req.currentSearchResults.length + 1
+                ) {
+                  await message.channel.send(
+                    req.currentSearchResults[numArg - 1].url
+                  );
+                } else {
+                  await message.channel.send(
+                    `Your input is **out of range** or **invalid**`
+                  );
+                }
+              }
+            } else if (m.first().content.toLowerCase().startsWith('!back')) {
+              if (req !== null) {
+                const output = await req.printSearchResults();
+                await message.channel.send(output);
+                await message.channel.send(
+                  'Available Commands: **!search**, **!stop**, **!next**, **!prev** **!get**'
+                );
+              }
+            } else if (m.first().content.toLowerCase().startsWith('!help')) {
+              const output = 'Commands:\n';
+
+              const startCommand = `**!start** - Starts the bot. EX - "!start",\n`;
+              const stopCommand = `**!stop** - Stops the bot. EX - "!stop",\n`;
+              const searchCommand = `**!search** - Searches the library for a search query. Format is "!search SEARCH_QUERY." EX - !search Batman,\n`;
+              const nextCommand = `**!next** - Goes to the next page of the search results, if applicable. This command can only be used if you have an active search request. EX - "!next",\n`;
+              const prevCommand = `**!prev** - Gets the previous page of the search results, if applicable. This command can only be used if you have an active search request. EX - "!prev",\n`;
+              const getCommand =
+                '**!get SEARCH_RESULT_NUMBER** - Gets the URL for the search result that matches the number the user ended with. Format is "!get NUMBER."\n !EX -\n  1. Batman Beyond (Season Three)\n  2. Batman Beyond (Batgirl Beyond)\n  3. Batman Beyond (Season 2)\n !get 3 returns Batman Beyond (Season 2), which is the 3rd index on the search results';
+
+              await message.channel.send(
+                `${output} ${startCommand} ${stopCommand} ${searchCommand} ${nextCommand} ${prevCommand} ${getCommand}`
+              );
             }
           })
           .catch((err) => {
@@ -111,48 +163,3 @@ bot.on('message', async (message) => {
     }
   }
 });
-
-// OLD STUFF BELOW, TRYING STACKOVERFLOW METHOD NOW
-
-// bot.on('message', async (msg) => {
-//   let req = null;
-//   if (msg.content.startsWith('!search')) {
-//     // This is going to be changed to be much neater in the future. Right now it's just to test if the bot actually works
-//     msg.reply('Searching...');
-//     const searchTerm = msg.content.split('!search')[1];
-//     req = new Request(msg.author.id);
-
-//     await req.search(searchTerm);
-//     const output = await req.printSearchResults();
-//     msg.reply(output);
-//     console.log(req instanceof Request, 'HE');
-//   }
-
-//   while (req !== null && req.checkIfRequestActive()) {
-//     // console.log('called');
-//     if (msg.content.startsWith('!next') && req.activeRequest) {
-//       console.log('called again');
-//       req.nextPage();
-//     }
-//   }
-// });
-
-// WAYS TO GO TO NEXT PAGE
-// Check if the paginationEnd is equal to the totalResults
-// If they are that means it's the last page
-
-// Otherwise,
-// EXAMPLE library url :
-// https://sccl.bibliocommons.com/v2/search?query=harry%20potter&searchType=smart&_ga=2.2000178.2042555556.1606619824-2090744789.1606619824&pagination_page=14
-// Get the library url and split it based off "page="
-// It should return an array of size 2 (lets say it's called urlArray) where the first element is the url and the last element is the page number
-// Make the new libUrl urlArray[0] + "page=" + urlArray[1]+1
-
-// const main = async () => {
-//   // const libUrl = await searchTitle('spiderman');
-//   // const searchResults = await getSearchResults(libUrl);
-//   const searchResults = await getSearchResults(testResultsUrl);
-//   await printSearchResults(searchResults);
-// };
-
-// main();
