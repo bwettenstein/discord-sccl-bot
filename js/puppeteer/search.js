@@ -1,11 +1,19 @@
 // Holds methods that pertain to the search results page of the library website
 
 const puppeteer = require('puppeteer');
+
+// ------------------------------------
+// Grabs the search results on the page from the given url and parses each of them for information (see the comment above the searchResultsArray for the specific info)
+// Various methods, commented below, are used to parse specific information
+// Once parsed, all the information is placed into an object which is pushed on to an array and returned
+// Takes in a url, which it parses for the search result information
+// ------------------------------------
 const getSearchResults = async (url) => {
   try {
     const titleAuthorContainerClass = '.cp-deprecated-bib-brief';
     const searchResultContainerClass = '.cp-search-result-item-content';
 
+    // Launch browser methods
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
 
@@ -15,7 +23,7 @@ const getSearchResults = async (url) => {
     //   author (if applicable),
     //   format,
     //   url,
-    // availability
+    //   availability
     // }
     const searchResultsArray = [];
 
@@ -80,12 +88,16 @@ const getSearchResults = async (url) => {
   }
 };
 
+// ------------------------------------
 // Get the pagination of the current results on the current page
 // * The format for the pagination text is 'NUMBER (paginationStart) to NUMBER (paginationEnd) of TOTAL_RESULTS results'
+// EX: 1 - 10 of 30 results
+// Takes in the url, which it parses for the pagination classes
 // Takes in a searchQuery, which can be "paginationStart" (which returns the starting index of the current results, see *),
 // paginationEnd (which returns the end index of the current results, see *),
 // totalResults (which returns the total number of results, see *),
 // or returns the paginationStart, paginationEnd, and totalResults as an object if searchQuery is empty
+// ------------------------------------
 const getPagination = async (url, searchQuery = '') => {
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
@@ -132,6 +144,12 @@ const getPagination = async (url, searchQuery = '') => {
   return output;
 };
 
+// ------------------------------------
+// Gets the url for each search result and returns it
+// Takes in a titleAndAuthorElement which is parsed for the href
+// Takes in a page element which holds puppeteer browser methods
+// Takes page, which allows us to use the puppeter evaluate method to get the url of the specific titleAndAuthorElement
+// ------------------------------------
 const getResultUrl = async (titleAndAuthorElement, page) => {
   // The href link will be added to the end of this url
 
@@ -145,9 +163,12 @@ const getResultUrl = async (titleAndAuthorElement, page) => {
   return url;
 };
 
-// Grabs the title and format for a given titleAndAuthorElement and returns them, if applicable
-// Takes in the titleAndAuthorElement to parse the title and format from
-// Takes in page in order to use the puppeteer query selector method
+// ------------------------------------
+// Grabs the title and format and returns them, if applicable
+// Takes in the titleAndAuthorElement to parse the title and format in it
+// Takes in a page element which holds puppeteer browser methods
+// Takes page, which allows us to use the puppeter evaluate method to get the title and format
+// ------------------------------------
 const getTitleAndFormat = async (titleAndAuthorElement, page) => {
   const titleFormatClass = '.cp-screen-reader-message';
   const titleAndFormatElement = await titleAndAuthorElement.$(titleFormatClass);
@@ -169,9 +190,12 @@ const getTitleAndFormat = async (titleAndAuthorElement, page) => {
   return { title, format };
 };
 
-// Get the author and return it, if applicable
-// Takes titleAndAuthorElement, to get the author element from
-// Takes page, which allows us to use the puppeter query selector method
+// ------------------------------------
+// Get the author and returns it, if applicable
+// Takes titleAndAuthorElement, to parse the author element in it
+// Takes in a page element which holds puppeteer browser methods
+// Takes page, which allows us to use the puppeter evaluate method to get the author
+// ------------------------------------
 const getAuthor = async (titleAndAuthorElement, page) => {
   // Parse the results for the author, if applicable
   const authorClass = '.author-link';
@@ -182,9 +206,13 @@ const getAuthor = async (titleAndAuthorElement, page) => {
   return author;
 };
 
-// Get subtitle element and returns it, if applicable
-// Takes titleAndAuthorElement, to get the author element from
-// Takes page, which allows us to use the puppeter query selector method
+// ------------------------------------
+// Get the subtitle and returns it, if applicable
+// Subtitles are usually only present for books
+// EX - The Dark Tower: The Wind Through The Keyhole, here "The Wind Through The Keyhole" is the subtitle
+// Takes titleAndAuthorElement, to parse the subtitle element from
+// Takes page, which allows us to use the puppeter evaluate method to get the subtitle
+// ------------------------------------
 const getSubtitle = async (titleAndAuthorElement, page) => {
   const subtitleClass = '.cp-subtitle';
   const subtitleElement = await titleAndAuthorElement.$(subtitleClass);
@@ -196,8 +224,13 @@ const getSubtitle = async (titleAndAuthorElement, page) => {
   return subtitle;
 };
 
-// Get searchResult element and grab the availabilityElement from it
+// ------------------------------------
+// Gets the availability status and returns true if the item is available
+// Takes titleAndAuthorElement, to parse the availability element from
 // If the availabilityElement's innerText is 'Available', return true
+// Takes in a page element which holds puppeteer browser methods
+// Takes page, which allows us to use the puppeter evaluate method to get the availability
+// ------------------------------------
 const getAvailability = async (searchResultElement, page) => {
   const availabilityClass = '.cp-availability-status';
   const availabilityElement = await searchResultElement.$(availabilityClass);

@@ -3,14 +3,14 @@ const Request = require('./js/discord/Request');
 // ------------------------------------
 // Generic URL used to debug
 // ------------------------------------
-const testResultsUrl =
-  'https://sccl.bibliocommons.com/v2/search?query=the%20dark%20tower&searchType=smart&_ga=2.2000178.2042555556.1606619824-2090744789.1606619824';
+// const testResultsUrl =
+//   'https://sccl.bibliocommons.com/v2/search?query=the%20dark%20tower&searchType=smart&_ga=2.2000178.2042555556.1606619824-2090744789.1606619824';
 
-const { searchTitle } = require('./js/puppeteer/homepage');
-const {
-  getSearchResults,
-  printSearchResults,
-} = require('./js/puppeteer/search');
+// const { searchTitle } = require('./js/puppeteer/homepage');
+// const {
+//   getSearchResults,
+//   printSearchResults,
+// } = require('./js/puppeteer/search');
 
 const Discord = require('discord.js');
 const dotenv = require('dotenv');
@@ -27,11 +27,6 @@ bot.login(TOKEN);
 // ------------------------------------
 const commands = ['!search', '!next', '!previous', '!help'];
 
-// ------------------------------------
-// Holds the requests
-// ------------------------------------
-const requests = [];
-
 bot.on('ready', () => {
   console.info(`Logged in as ${bot.user.tag}!`);
 });
@@ -41,14 +36,10 @@ bot.on('message', async (message) => {
   if (message.author.bot) return;
 
   if (message.content.toLowerCase() === '!start') {
-    if (requests.includes(message.author.id)) return;
-
     try {
       await message.channel.send(
         'Bot has started \n Available Commands: **!help**, **!search**, **!stop**'
       );
-
-      requests.push(message.author.id);
 
       // ------------------------------------
       // Declares a variable called cancel which defaults to false
@@ -62,14 +53,14 @@ bot.on('message', async (message) => {
           .awaitMessages((msg) => msg.author.id === message.author.id, {
             max: 1,
             // Max timeout will be extended, right now it's only 30 seconds for debugging
-            // time: 30000,
+            // If the user doesn't make a response within 30 seconds, the application will time out and end
+            time: 30000,
             errors: ['time'],
           })
           // This entire section needs to be condensed and written much neater. I'm thinking switch statements
           .then(async (m) => {
             if (m.first().content.toLowerCase().startsWith('!stop')) {
               await message.channel.send('**Application cancelled.**');
-              requests.splice(requests.indexOf(message.author.id), 1);
               cancel = true;
             } else if (m.first().content.toLowerCase().startsWith('!search')) {
               await message.channel.send('Searching.....');
@@ -153,7 +144,6 @@ bot.on('message', async (message) => {
           })
           .catch((err) => {
             message.channel.send(':hourglass: **Application timed out.**');
-            requests.splice(requests.indexOf(message.author.id), 1);
             cancel = true;
             console.log('Error: ', err.message, err);
           });

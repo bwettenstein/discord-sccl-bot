@@ -2,6 +2,11 @@
 
 const puppeteer = require('puppeteer');
 
+// ------------------------------------
+// Searches the sccl.org website for a searchQuery
+// Returns the url of the page that displays search results
+// searchQuery is provided by the user when they call the "!search" command in discord
+// ------------------------------------
 const searchTitle = async (searchQuery) => {
   try {
     const headerClass = '.header_search_xs';
@@ -13,9 +18,7 @@ const searchTitle = async (searchQuery) => {
     const searchBarDataTag = '[data-js="main_search_input"]';
     const searchButtonWrapperClass = '.input-group-btn';
 
-    let searchBar;
-    let searchButtonWrapper;
-
+    // Launch browser methods
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
     await page.goto('https://sccld.org/', {
@@ -38,12 +41,12 @@ const searchTitle = async (searchQuery) => {
     const mobileForm = await page.$(mobileFormId);
 
     // Search bar actions
-    searchBar = await mobileForm.$(searchBarDataTag);
+    const searchBar = await mobileForm.$(searchBarDataTag);
     await searchBar.type(searchQuery);
 
     // await page.screenshot({ path: 'screenshot3.png' });
 
-    searchButtonWrapper = await mobileForm.$(searchButtonWrapperClass);
+    const searchButtonWrapper = await mobileForm.$(searchButtonWrapperClass);
 
     await searchButtonWrapper.click('button');
 

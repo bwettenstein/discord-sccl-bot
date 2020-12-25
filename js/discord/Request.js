@@ -7,16 +7,21 @@ class Request {
     this.name = name;
     this.activeRequest = activeRequest;
 
+    // currentSearchResults is an array that holds the most recent, or current, search results that match the user's search query
     // libUrl holds the url for the search results, it's needed to grab the pagination info for the output
+    // currentPaginationInfo is an object that holds the pagination info for the currentSearchResults
+    // The Pagination info includes how many pages match the search query
     this.currentSearchResults = null;
     this.libUrl = null;
     this.currentPaginationInfo = null;
   }
 }
 
-// Grabs a searchQuery from the user and uses the homepage and search methods from the puppeteer folder
+// ------------------------------------
+// Takes a searchQuery from the user and uses the homepage and search methods from the puppeteer folder
 // The libUrl is assigned to the specific request in order for pagination parsing and output purposes
 // An array of all the searchResult elements is returned
+// ------------------------------------
 Request.prototype.search = async function (searchQuery) {
   const libUrl = await homepage.searchTitle(searchQuery);
   const searchResults = await search.getSearchResults(libUrl);
