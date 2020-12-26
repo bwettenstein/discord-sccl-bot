@@ -19,7 +19,7 @@ const searchTitle = async (searchQuery) => {
     const searchButtonWrapperClass = '.input-group-btn';
 
     // Launch browser methods
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
     const page = await browser.newPage();
     await page.goto('https://sccld.org/', {
       waitUntil: ['load', 'domcontentloaded'],

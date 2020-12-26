@@ -14,7 +14,7 @@ const getSearchResults = async (url) => {
     const searchResultContainerClass = '.cp-search-result-item-content';
 
     // Launch browser methods
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
     const page = await browser.newPage();
 
     // Subject to change, but the object below should be the format for all of these results
