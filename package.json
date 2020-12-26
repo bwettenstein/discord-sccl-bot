@@ -7,6 +7,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon app.js"
   },
+  "engines": {
+    "node": "13.5.0"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/bwettenstein/discord-sccl-bot.git"
