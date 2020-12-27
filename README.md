@@ -45,3 +45,18 @@ Bot information: **sccl-library-bot#9658**
 - **!back**
   - Gets the most recent search results and returns them to the user. This command is meant to be used after the !get command is used.
   - EX of usage: _"!back"_
+
+## Tech Stack
+
+- NodeJS - The code was written using Node not only because it was a pure backend project.
+- [Discord.js](https://discord.js.org/#/) - A node module that handles Discord API methods. In this project, it was used to read user  
+  messages and send messages back to users in their specific channel.
+- [Puppeteer](https://github.com/puppeteer/puppeteer) - A node module that opens a headless chromium browser, which allows scraping  
+  and interacting with the DOM. In this project, it was used to scrape the SCCL library website in order to get information about user  
+  search queries and also used to simulate clicking specific aspects of the DOM.
+
+## Future improvements
+
+- Rewrite the the bot.on('message') handler function using switch statements to make it more readable
+- Keep a history of all the search items
+- Possibly rewrite it without Puppeteer because the headless browser aspect of it makes it difficult to host
