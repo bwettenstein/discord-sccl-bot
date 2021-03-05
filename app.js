@@ -21,12 +21,6 @@ const TOKEN = process.env.TOKEN;
 const bot = new Discord.Client();
 bot.login(TOKEN);
 
-// ------------------------------------
-// Define the questions you'd like the
-// application to have in this array.
-// ------------------------------------
-const commands = ['!search', '!next', '!previous', '!help'];
-
 bot.on('ready', () => {
   console.info(`Logged in as ${bot.user.tag}!`);
 });
@@ -70,7 +64,7 @@ bot.on('message', async (message) => {
               const output = await req.printSearchResults();
               await message.channel.send(output);
               await message.channel.send(
-                'Available Commands: **!help**, **!search**, **!stop**, **!next**, **!prev**'
+                'Available Commands: **!help**, **!search**, **!stop**, **!next**, **!prev** **!get**'
               );
             } else if (m.first().content.toLowerCase().startsWith('!next')) {
               if (req !== null && req.checkIfPaginationPossible('next')) {
@@ -141,6 +135,11 @@ bot.on('message', async (message) => {
                 `${output} ${startCommand} ${stopCommand} ${searchCommand} ${nextCommand} ${prevCommand} ${getCommand}`
               );
             }
+            // PIN this comment to the discord channel
+            // else if (m.first().content.toLowerCase().startsWith('!intro')) {
+            //   const output = `Hello, I'm the SCCL library bot. Message me "!start" to start using me. \nREADME LINK - https://github.com/bwettenstein/discord-sccl-bot`;
+            //   await message.channel.send(output);
+            // }
           })
           .catch((err) => {
             message.channel.send(':hourglass: **Application timed out.**');
