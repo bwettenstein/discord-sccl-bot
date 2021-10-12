@@ -106,7 +106,7 @@ const getPagination = async (url, searchQuery = '') => {
     waitUntil: ['load', 'domcontentloaded'],
   });
 
-  const paginationTextClass = '.pagination-text';
+  const paginationTextClass = '.cp-pagination-label';
 
   // Get the string that has the number of results
   const paginationText = await page.$(paginationTextClass);
