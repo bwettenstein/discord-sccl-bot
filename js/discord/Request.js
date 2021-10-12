@@ -46,7 +46,8 @@ Request.prototype.search = async function (searchQuery) {
 // ------------------------------------
 Request.prototype.nextPage = async function () {
   if (this.checkIfPaginationPossible('next')) {
-    const splitUrl = this.libUrl.split('&pagination_page=');
+    //const splitUrl = this.libUrl.split('&pagination_page=');
+    const splitUrl = this.libUrl.split('&page=');
 
     // ------------------------------------
     // Uncomment for debugging
@@ -58,12 +59,15 @@ Request.prototype.nextPage = async function () {
 
     // If there's no "pagination_page" endpoint, we append it to the url
     if (!splitUrl[1]) {
-      newUrl = splitUrl[0] + '&pagination_page=2';
+      //newUrl = splitUrl[0] + '&pagination_page=2';
+      newUrl = splitUrl[0] + '&page=2';
     } else {
       // Parse the int from the string
       const nextPageNumber = parseInt(splitUrl[1]) + 1;
-      newUrl = splitUrl[0] + `&pagination_page=${nextPageNumber}`;
+      newUrl = splitUrl[0] + `&page=${nextPageNumber}`;
+      //newUrl = splitUrl[0] + `&page=${nextPageNumber}`;
     }
+    console.log(newUrl, 'newurl');
     this.setLibUrl(newUrl);
     const searchResults = await search.getSearchResults(this.libUrl);
     await this.setCurrentSearchResults(searchResults);
@@ -81,11 +85,11 @@ Request.prototype.nextPage = async function () {
 // Make the new libUrl urlArray[0] + "page=" + urlArray[1] - 1
 // ------------------------------------
 Request.prototype.prevPage = async function () {
-  const splitUrl = this.libUrl.split('&pagination_page=');
+  const splitUrl = this.libUrl.split('&page=');
 
   // Parse the int from the string
   const nextPageNumber = parseInt(splitUrl[1]) - 1;
-  const newUrl = splitUrl[0] + `&pagination_page=${nextPageNumber}`;
+  const newUrl = splitUrl[0] + `&page=${nextPageNumber}`;
 
   this.setLibUrl(newUrl);
   const searchResults = await search.getSearchResults(this.libUrl);
